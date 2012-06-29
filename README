@@ -3,18 +3,19 @@ WiringPi: An implementation of most of the Arduino Wiring
 
 WiringPiGem: The WiringPi library wrapped up for Ruby with some OO goodness, sanity checking and other handy additions.
 
-How to use:
+WiringPi GPIO:
+
+    require 'wiringpi'
+    io = WiringPi::GPIO.new
+    io.serialWrite(pin,value)
+    io.serialRead(pin,value)
+
+WiringPi Serial:
 
 require 'wiringpi'
-WiringPi::GPIO.serialWrite(pin,value)
-WiringPi::GPIO.serialRead(pin,value)
-
-WiringPi serial:
-
-require 'wiringpi'
-s = WiringPi::Serial.new('/dev/ttyAMA0',9600)
-s.serialPuts('Hello world!')
-s.serialClose
+    s = WiringPi::Serial.new('/dev/ttyAMA0',9600)
+    s.serialPuts('Hello world!')
+    s.serialClose
 
 Full details at:
 	https://projects.drogon.net/raspberry-pi/wiringpi/

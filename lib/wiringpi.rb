@@ -70,13 +70,13 @@ module WiringPi
 
   end
 
-  class WiringPi
+  class GPIO
 
-    @@gpioPins = [
+    GPIO_PINS = [
       0,1,4,7,8,9,10,11,14,15,17,18,21,22,23,24,25 # seemingly random indeed!
       ]
 
-    @@pins = [
+    PINS = [
       0,1,2,3,4,5,6,7, # basic IO pins
       8,9,             # i2c with 1k8 pull up resistor
       10,11,12,13,14,     # SPI pins, can also be used for IO
@@ -90,7 +90,7 @@ module WiringPi
     def initialize( mode=WPI_MODE_PINS )
 
 	  @mode = mode
-      self.wiringPiSetup
+      self.wiringPiSetup unless @@init
 
     end
 
@@ -114,9 +114,20 @@ module WiringPi
     
     end
 
+    def checkPin(pin)
+
+      ( @mode = WPI_MODE_PINS and PINS.include?(pin) ) or ( @mode = WPI_MODE_GPIO and GPIO_PINS.include?(pin) )
+
+    end
+
+    def pinError(pin)
+      "invalid #{pin}, available gpio pins: #{PINS}" if @mode == WPI_MODE_PINS
+      "invalid #{pin}, available gpio pins: #{GPIO_PINS}" if @mode == WPI_MODE_GPIO
+    end
+
     def read(pin)
 
-      raise ArgumentError, "invalid pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(pin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(pin) )
+      raise ArgumentError, pinError(pin) unless checkPin(pin)
 
       Wiringpi.digitalRead(pin)
 
@@ -124,7 +135,7 @@ module WiringPi
 
     def pwmWrite(pin,value)
 
-      raise ArgumentError, "invalid pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(pin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(pin) )
+      raise ArgumentError, pinError(pin) unless checkPin(pin)
 
       Wiringpi.pwmWrite(pin,value)
 
@@ -132,7 +143,7 @@ module WiringPi
 
     def write(pin,value)
     
-      raise ArgumentError, "invalid pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(pin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(pin) )
+      raise ArgumentError, pinError(pin) unless checkPin(pin)
       raise ArgumentError, 'invalid value' unless [0,1].include?(value)
 
       Wiringpi.digitalWrite(pin,value)
@@ -141,7 +152,7 @@ module WiringPi
 
     def mode(pin,mode)
 
-      raise ArgumentError, "invalid pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(pin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(pin) )
+      raise ArgumentError, pinError(pin) unless checkPin(pin)
       raise ArgumentError, "invalid mode" unless [INPUT,OUTPUT,PWM_OUTPUT].include?(mode)
 
       Wiringpi.pinMode(pin, mode)
@@ -155,9 +166,9 @@ and handing to Wiringpi.shiftOut, must contain only 1s or 0s
 =end
     def shiftOutArray(dataPin, clockPin, latchPin, bits)
 
-      raise ArgumentError, "invalid data pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(dataPin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(dataPin) )
-      raise ArgumentError, "invalid clock pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(clockPin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(clockPin) )
-      raise ArgumentError, "invalid latch pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(latchPin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(latchPin) )
+      raise ArgumentError, "invalid data pin, available gpio pins: #{PINS}" unless checkPin(dataPin)
+      raise ArgumentError, "invalid clock pin, available gpio pins: #{PINS}" unless checkPin(clockPin)
+      raise ArgumentError, "invalid latch pin, available gpio pins: #{PINS}" unless checkPin(latchPin)
 
       WiringPi.write( latchPin, LOW )
 
@@ -175,9 +186,9 @@ Shift out a single 8-bit integer 0-255
 =end
     def shiftOut(dataPin, clockPin, latchPin, char)
 
-      raise ArgumentError, "invalid data pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(dataPin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(dataPin) )
-      raise ArgumentError, "invalid clock pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(clockPin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(clockPin) )
-      raise ArgumentError, "invalid latch pin, available gpio pins: #{@@pins}" unless ( @mode = WPI_MODE_PINS and @@pins.include?(latchPin) ) or ( @mode = WPI_MODE_GPIO and @@gpioPins.include?(latchPin) )
+      raise ArgumentError, "invalid data pin, available gpio pins: #{PINS}" unless checkPin(dataPin)
+      raise ArgumentError, "invalid clock pin, available gpio pins: #{PINS}" unless checkPin(clockPin)
+      raise ArgumentError, "invalid latch pin, available gpio pins: #{PINS}" unless checkPin(latchPin)
         
       WiringPi.write( latchPin, LOW )
 
@@ -195,9 +206,9 @@ Reads values of all pins and returns them as a hash
 
       pinValues = Hash.new
 
-      if @mode = WPI_MODE_GPIO
+      if @mode == WPI_MODE_GPIO
 
-        @@gpioPins.each do |pin|
+        GPIO_PINS.each do |pin|
         
           pinValues[pin] = self.read(pin)
         
@@ -205,7 +216,7 @@ Reads values of all pins and returns them as a hash
 
       else
       
-        @@pins.each do |pin|
+        PINS.each do |pin|
         
           pinValues[pin] = self.read(pin)
         
