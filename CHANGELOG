@@ -1,0 +1,4 @@
+1.0.0
+    Significant architectural changes and new features over alpha version.
+    Updated to latest version of wiringPi library which includes shiftOut/shiftIn and serial functions.
+    WiringPi is now contained within the module WiringPi, all future extensions should use this module name.

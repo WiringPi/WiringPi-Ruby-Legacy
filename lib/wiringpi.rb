@@ -14,6 +14,59 @@ PUD_OFF		= 0
 PUD_DOWN	= 1
 PUD_UP		= 2
 
+LSBFIRST	= 0
+MSBFIRST	= 0
+
+module WiringPi
+
+class Serial
+
+	@id = 0
+	@device = '/dev/ttyAMA0'
+	@baud = 9600
+
+	def initialize(device,baud)
+
+		@device = device
+		@baud = baud
+
+		@id = Wiringpi.serialOpen( @device,@baud )
+
+	end
+
+	def serialClose
+
+		Wiringpi.serialClose( @id )
+		@id = 0
+
+	end
+
+	def serialPutchar( char )
+
+		Wiringpi.serialPutchar( @id, char )
+
+	end
+
+	def serialPuts( string )
+
+		Wiringpi.serialPuts( @id, string )
+
+	end
+
+	def serialDataAvail
+	
+		Wiringpi.serialDataAvail( @id )
+
+	end
+
+	def serialGetchar
+
+		Wiringpi.serialGetchar( @id )
+
+	end
+
+end
+
 class WiringPi
 
 	@@gpioPins = [
@@ -29,44 +82,6 @@ class WiringPi
 
 	@@mode = WPI_MODE_PINS
 	@@init = false
-
-    def self.shiftOut( dataPin, clockPin, latchPin, bits )
-
-        self.wiringPiSetup unless @@init
-
-		self.mode dataPin, OUTPUT
-		self.mode clockPin, OUTPUT
-		self.mode latchPin, OUTPUT
-
-        Wiringpi.shiftOut( dataPin, clockPin, latchPin, bits, bits.length )
-
-        #self.write( latchPin, LOW )
-        #bits.each do |bit|
-        #
-        #    self.write( clockPin, LOW )
-        #    self.write( dataPin, bit )
-        #    self.write( clockPin, HIGH )
-        #
-        #end
-        #self.write( latchPin, HIGH )
-
-    end
-
-	def self.readAll
-
-		self.wiringPiSetup unless @@init
-
-		pinValues = Hash.new
-
-		@@pins.each do |pin|
-		
-			pinValues[pin] = self.read(pin)
-		
-		end
-
-		pinValues
-
-	end
 
 	def self.wiringPiMode( mode )
 
@@ -129,5 +144,54 @@ class WiringPi
 		Wiringpi.pinMode(pin, mode)
 
 	end
+
+=begin
+shiftOutArray int dataPin, int clockPin, int latchPin, int[] bits
+Shifts out an array of ints by converting them into bytes
+and handing to Wiringpi.shiftOut, must contain only 1s or 0s
+=end
+	def shiftOutArray(dataPin, clockPin, latchPin, bits)
+
+		self.wiringPiSetup unless @@init
+
+        WiringPi.write( latchPin, LOW )
+
+		bits.each_slice(8) do |slice|
+			Wiringpi.shiftOut(dataPin, clockPin, LSBFIRST, slice.reverse.join.to_i(2)) 
+		end
+
+        WiringPi.write( latchPin, HIGH )
+
+    end
+
+	def shiftOut(dataPin, clockPin, latchPin, char)
+		
+		self.wiringPiSetup unless @@init
+		
+		WiringPi.write( latchPin, LOW )
+
+		Wiringpi.shiftOut(dataPin, clockPin, LSBFIRST, char)
+
+		WiringPi.write( latchPin, HIGH )
+
+	end
+
+	def self.readAll
+
+		self.wiringPiSetup unless @@init
+
+		pinValues = Hash.new
+
+		@@pins.each do |pin|
+		
+			pinValues[pin] = self.read(pin)
+		
+		end
+
+		pinValues
+
+	end
+
+end
 
 end
