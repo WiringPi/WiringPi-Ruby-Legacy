@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
@@ -147,6 +148,25 @@ void serialPuts (int fd, char *s)
 {
   write (fd, s, strlen (s)) ;
 }
+
+/*
+ * serialPrintf:
+ *	Printf over Serial
+ *********************************************************************************
+ */
+
+void serialPrintf (int fd, char *message, ...)
+{
+  va_list argp ;
+  char buffer [1024] ;
+
+  va_start (argp, message) ;
+    vsnprintf (buffer, 1023, message, argp) ;
+  va_end (argp) ;
+
+  serialPuts (fd, buffer) ;
+}
+
 
 /*
  * serialDataAvail:

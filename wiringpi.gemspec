@@ -1,9 +1,9 @@
 Gem::Specification.new do |s|
   s.name	= 'wiringpi'
-  s.version	= '1.0.0'
+  s.version	= '1.0.2'
   s.license = 'GNU General Public License'
   s.date	= '2012-06-22'
-  s.platform= Gem::Platform::CURRENT
+  s.platform= Gem::Platform::RUBY
   s.summary	= "Arduino wiring-like library for Raspberry Pi GPIO. Will only work on a Pi. Alpha version."
   s.authors	= ["Gordon","Phil"]
   s.email	= 'phil@gadgetoid.com'
