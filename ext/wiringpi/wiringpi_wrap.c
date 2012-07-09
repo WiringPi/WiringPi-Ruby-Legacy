@@ -1945,6 +1945,29 @@ SWIG_From_unsigned_SS_char  (unsigned char value)
 }
 
 
+SWIGINTERN int
+SWIG_AsVal_unsigned_SS_int (VALUE obj, unsigned int *val)
+{
+  unsigned long v;
+  int res = SWIG_AsVal_unsigned_SS_long (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v > UINT_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = (unsigned int)(v);
+    }
+  }  
+  return res;
+}
+
+
+SWIGINTERNINLINE VALUE
+SWIG_From_unsigned_SS_int  (unsigned int value)
+{    
+  return SWIG_From_unsigned_SS_long  (value);
+}
+
+
 SWIGINTERN swig_type_info*
 SWIG_pchar_descriptor(void)
 {
@@ -2012,6 +2035,38 @@ _wrap_wiringPiSetup(int argc, VALUE *argv, VALUE self) {
     rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
   }
   result = (int)wiringPiSetup();
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_wiringPiSetupSys(int argc, VALUE *argv, VALUE self) {
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  result = (int)wiringPiSetupSys();
+  vresult = SWIG_From_int((int)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_wiringPiSetupGpio(int argc, VALUE *argv, VALUE self) {
+  int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  result = (int)wiringPiSetupGpio();
   vresult = SWIG_From_int((int)(result));
   return vresult;
 fail:
@@ -2259,6 +2314,64 @@ _wrap_shiftIn(int argc, VALUE *argv, VALUE self) {
   arg3 = (uint8_t)(val3);
   result = shiftIn(arg1,arg2,arg3);
   vresult = SWIG_From_unsigned_SS_char((unsigned char)(result));
+  return vresult;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_delay(int argc, VALUE *argv, VALUE self) {
+  unsigned int arg1 ;
+  unsigned int val1 ;
+  int ecode1 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  ecode1 = SWIG_AsVal_unsigned_SS_int(argv[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "unsigned int","delay", 1, argv[0] ));
+  } 
+  arg1 = (unsigned int)(val1);
+  delay(arg1);
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_delayMicroseconds(int argc, VALUE *argv, VALUE self) {
+  unsigned int arg1 ;
+  unsigned int val1 ;
+  int ecode1 = 0 ;
+  
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  ecode1 = SWIG_AsVal_unsigned_SS_int(argv[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "unsigned int","delayMicroseconds", 1, argv[0] ));
+  } 
+  arg1 = (unsigned int)(val1);
+  delayMicroseconds(arg1);
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
+SWIGINTERN VALUE
+_wrap_millis(int argc, VALUE *argv, VALUE self) {
+  unsigned int result;
+  VALUE vresult = Qnil;
+  
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  }
+  result = (unsigned int)millis();
+  vresult = SWIG_From_unsigned_SS_int((unsigned int)(result));
   return vresult;
 fail:
   return Qnil;
@@ -2737,6 +2850,8 @@ SWIGEXPORT void Init_wiringpi(void) {
   
   SWIG_RubyInitializeTrackings();
   rb_define_module_function(mWiringpi, "wiringPiSetup", _wrap_wiringPiSetup, -1);
+  rb_define_module_function(mWiringpi, "wiringPiSetupSys", _wrap_wiringPiSetupSys, -1);
+  rb_define_module_function(mWiringpi, "wiringPiSetupGpio", _wrap_wiringPiSetupGpio, -1);
   rb_define_module_function(mWiringpi, "wiringPiGpioMode", _wrap_wiringPiGpioMode, -1);
   rb_define_module_function(mWiringpi, "pullUpDnControl", _wrap_pullUpDnControl, -1);
   rb_define_module_function(mWiringpi, "pinMode", _wrap_pinMode, -1);
@@ -2745,6 +2860,9 @@ SWIGEXPORT void Init_wiringpi(void) {
   rb_define_module_function(mWiringpi, "digitalRead", _wrap_digitalRead, -1);
   rb_define_module_function(mWiringpi, "shiftOut", _wrap_shiftOut, -1);
   rb_define_module_function(mWiringpi, "shiftIn", _wrap_shiftIn, -1);
+  rb_define_module_function(mWiringpi, "delay", _wrap_delay, -1);
+  rb_define_module_function(mWiringpi, "delayMicroseconds", _wrap_delayMicroseconds, -1);
+  rb_define_module_function(mWiringpi, "millis", _wrap_millis, -1);
   rb_define_module_function(mWiringpi, "serialOpen", _wrap_serialOpen, -1);
   rb_define_module_function(mWiringpi, "serialClose", _wrap_serialClose, -1);
   rb_define_module_function(mWiringpi, "serialPutchar", _wrap_serialPutchar, -1);

@@ -2,6 +2,7 @@ require 'wiringpi/wiringpi'
 
 WPI_MODE_PINS = 0 # Use sane pin numbering
 WPI_MODE_GPIO = 1 # Use Broadcom barmy GPIO pin numbering
+WPI_MODE_SYS  = 2 # Use /sys/class/gpio method
 
 # Constants for mode()
 INPUT = 0
@@ -103,13 +104,19 @@ module WiringPi
 
     def wiringPiSetup
 
-      begin        
-        Wiringpi.wiringPiSetup
+      begin
+        if @mode == WPI_MODE_PINS
+            Wiringpi.wiringPiSetup
+        elsif @mode == WPI_MODE_GPIO
+            Wiringpi.wiringPiSetupGpio
+        elsif @mode == WPI_MODE_SYS
+            Wiringpi.wiringPiSetupSys
+        end
       rescue Exception=>e
         raise e
       end
 
-      Wiringpi.wiringPiGpioMode( @mode )
+      #Wiringpi.wiringPiGpioMode( @mode )
       @@init = true
     
     end
@@ -170,13 +177,13 @@ and handing to Wiringpi.shiftOut, must contain only 1s or 0s
       raise ArgumentError, "invalid clock pin, available gpio pins: #{PINS}" unless checkPin(clockPin)
       raise ArgumentError, "invalid latch pin, available gpio pins: #{PINS}" unless checkPin(latchPin)
 
-      WiringPi.write( latchPin, LOW )
+      Wiringpi.digitalWrite( latchPin, LOW )
 
       bits.each_slice(8) do |slice|
         Wiringpi.shiftOut(dataPin, clockPin, LSBFIRST, slice.reverse.join.to_i(2)) 
       end
 
-      WiringPi.write( latchPin, HIGH )
+      Wiringpi.digitalWrite( latchPin, HIGH )
 
     end
 
@@ -184,17 +191,17 @@ and handing to Wiringpi.shiftOut, must contain only 1s or 0s
 shiftOut int dataPin, int clockPin, int latchPin, char
 Shift out a single 8-bit integer 0-255
 =end
-    def shiftOut(dataPin, clockPin, latchPin, char)
+    def shiftOut(dataPin, clockPin, byteOrder, char)
 
-      raise ArgumentError, "invalid data pin, available gpio pins: #{PINS}" unless checkPin(dataPin)
-      raise ArgumentError, "invalid clock pin, available gpio pins: #{PINS}" unless checkPin(clockPin)
-      raise ArgumentError, "invalid latch pin, available gpio pins: #{PINS}" unless checkPin(latchPin)
+      #raise ArgumentError, "invalid data pin, available gpio pins: #{PINS}" unless checkPin(dataPin)
+      #raise ArgumentError, "invalid clock pin, available gpio pins: #{PINS}" unless checkPin(clockPin)
+      #raise ArgumentError, "invalid latch pin, available gpio pins: #{PINS}" unless checkPin(latchPin)
         
-      WiringPi.write( latchPin, LOW )
+      #Wiringpi.digitalWrite( latchPin, LOW )
 
-      Wiringpi.shiftOut(dataPin, clockPin, LSBFIRST, char)
+      Wiringpi.shiftOut(dataPin, clockPin, byteOrder, char)
 
-      WiringPi.write( latchPin, HIGH )
+      #Wiringpi.digitalWrite( latchPin, HIGH )
 
     end
 

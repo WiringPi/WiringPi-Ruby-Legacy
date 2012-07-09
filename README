@@ -7,8 +7,24 @@ WiringPi GPIO:
 
     require 'wiringpi'
     io = WiringPi::GPIO.new
-    io.serialWrite(pin,value)
-    io.serialRead(pin,value)
+    io.write(pin,value)
+    io.read(pin,value)
+
+    Shift out:
+
+    io.write(latch_pin, LOW)
+    io.shiftOut(data_pin, clock_pin, LSBFIRST or MSBFIRST, value)
+    io.write(latch_pin, HIGH)
+
+    Shift out an array of 1/0s (always uses LSBFIRST):
+
+    io.shiftOutArray(data_pin, clock_pin, latch_pin, [0,1,0,0,1,1,1,0])
+
+WiringPi GPIO with /sys/class/gpio:
+
+    require 'wiringpi
+    io = WiringPi::GPIO.new(WPI_MODE_SYS)
+    # read/write/shift as usual
 
 WiringPi Serial:
 

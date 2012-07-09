@@ -26,6 +26,8 @@
  */
 
 // Revisions:
+//	 2 Jul 2012:
+//		Fixed a few more bugs to do with range-checking when in GPIO mode.
 //	11 Jun 2012:
 //		Fixed some typos.
 //		Added c++ support for the .h file
@@ -43,12 +45,17 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <time.h>
 #include <fcntl.h>
 #include <sys/time.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+
 
 #include "wiringPi.h"
 
@@ -59,15 +66,15 @@
 
 // Port function select bits
 
-#define	FSEL_INPT	    0x0
-#define	FSEL_OUTP		0x1
-#define	FSEL_ALT0		0x4
-#define	FSEL_ALT0		0x4
-#define	FSEL_ALT1		0x5
-#define	FSEL_ALT2		0x6
-#define	FSEL_ALT3		0x7
-#define	FSEL_ALT4		0x3
-#define	FSEL_ALT5		0x2
+#define	FSEL_INPT		0b000
+#define	FSEL_OUTP		0b001
+#define	FSEL_ALT0		0b100
+#define	FSEL_ALT0		0b100
+#define	FSEL_ALT1		0b101
+#define	FSEL_ALT2		0b110
+#define	FSEL_ALT3		0b111
+#define	FSEL_ALT4		0b011
+#define	FSEL_ALT5		0b010
 
 // Access from ARM Running Linux
 //	Take from Gerts code. Some of this is not in the manual
@@ -135,7 +142,12 @@ static volatile uint32_t *clk ;
 // So the 3 bits for port X are:
 //	X / 10 + ((X % 10) * 3)
 
-// mode
+// sysFds:
+//	Map a file descriptor from the /sys/class/gpio/gpioX/value file
+
+static int sysFds [64] ;
+
+// Mode
 
 static int gpioPinMode ;
 
@@ -267,6 +279,9 @@ void wiringPiGpioMode (int mode)
 /*
  * wiringPiSetup:
  *	Must be called once at the start of your program execution.
+ *
+ * Default setup: Initialises the system into wiringPi Pin mode and uses the
+ *	memory mapped hardware directly.
  *********************************************************************************
  */
 
@@ -387,6 +402,65 @@ int wiringPiSetup (void)
 
 
 /*
+ * wiringPiSetupGpio:
+ *	Must be called once at the start of your program execution.
+ *
+ * GPIO setup: Initialises the system into GPIO Pin mode and uses the
+ *	memory mapped hardware directly.
+ *********************************************************************************
+ */
+
+int wiringPiSetupGpio (void)
+{
+  int x = wiringPiSetup () ;
+
+  if (x != 0)
+    return x ;
+
+  wiringPiGpioMode (WPI_MODE_GPIO) ;
+  return 0 ;
+}
+
+
+/*
+ * wiringPiSetupSys:
+ *	Must be called once at the start of your program execution.
+ *
+ * Initialisation (again), however this time we are using the /sys/class/gpio
+ *	interface to the GPIO systems - slightly slower, but always usable as
+ *	a non-root user, assuming the devices are already exported and setup correctly.
+ */
+
+int wiringPiSetupSys (void)
+{
+  int fd, pin ;
+  struct timeval tv ;
+  char fName [128] ;
+
+// Set GPIO_SYS mode by default
+
+  wiringPiGpioMode (WPI_MODE_GPIO_SYS) ;
+
+// Open and scan the directory, looking for exported GPIOs, and pre-open
+//	the 'value' part to speed things up for later
+  
+  for (pin = 0 ; pin < 64 ; ++pin)
+  {
+    sysFds [pin] = -1 ;
+    sprintf (fName, "/sys/class/gpio/gpio%d/value", pin) ;
+    if ((fd = open (fName, O_RDWR)) == -1)
+      continue ;
+    sysFds [pin] = fd ;
+  }
+
+  gettimeofday (&tv, NULL) ;
+  epoch = (tv.tv_sec * 1000000 + tv.tv_usec) / 1000 ;
+
+  return 0 ;
+}
+
+
+/*
  * pinMode:
  *	Sets the mode of a pin to be input, output or PWM output
  *********************************************************************************
@@ -399,6 +473,10 @@ void pinMode (int pin, int mode)
   int gpioPin, fSel, shift ;
   int alt ;
 
+// We can't change the mode in GPIO_SYS mode
+
+  if (gpioPinMode == WPI_MODE_GPIO_SYS)
+    return ;
 
   if (gpioPinMode == WPI_MODE_PINS)
   {
@@ -411,7 +489,6 @@ void pinMode (int pin, int mode)
 
   fSel    = gpioToGPFSEL [gpioPin] ;
   shift   = gpioToShift  [gpioPin] ;
-
 
   /**/ if (mode == INPUT)
     *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) ; // Sets bits to zero = input
@@ -480,10 +557,23 @@ void digitalWrite (int pin, int value)
   else
     gpioPin = pin ;
 
-  if (value == HIGH)
-    *(gpio + gpioToGPSET [gpioPin]) = 1 << gpioPin ;
+  if (gpioPinMode == WPI_MODE_GPIO_SYS)
+  {
+    if (sysFds [gpioPin] != -1)
+    {
+      if (value == LOW)
+	write (sysFds [gpioPin], "0\n", 2) ;
+      else
+	write (sysFds [gpioPin], "1\n", 2) ;
+    }
+  }
   else
-    *(gpio + gpioToGPCLR [gpioPin]) = 1 << gpioPin ;
+  {
+    if (value == LOW)
+      *(gpio + gpioToGPCLR [gpioPin]) = 1 << gpioPin ;
+    else
+      *(gpio + gpioToGPSET [gpioPin]) = 1 << gpioPin ;
+  }
 }
 
 
@@ -496,6 +586,11 @@ void digitalWrite (int pin, int value)
 void pwmWrite (int pin, int value)
 {
   int port, gpioPin ;
+
+// We can't do this in GPIO_SYS mode
+
+  if (gpioPinMode == WPI_MODE_GPIO_SYS)
+    return ;
 
   if (gpioPinMode == WPI_MODE_PINS)
   {
@@ -521,6 +616,7 @@ void pwmWrite (int pin, int value)
 int digitalRead (int pin)
 {
   int gpioPin ;
+  char c ;
 
   if (gpioPinMode == WPI_MODE_PINS)
   {
@@ -531,10 +627,24 @@ int digitalRead (int pin)
   else
     gpioPin = pin ;
 
-  if ((*(gpio + gpioToGPLEV [gpioPin]) & (1 << gpioPin)) != 0)
-    return HIGH ;
+  if (gpioPinMode == WPI_MODE_GPIO_SYS)
+  {
+    if (sysFds [gpioPin] == -1)
+      return 0 ;
+    else
+    {
+      lseek (sysFds [gpioPin], 0L, SEEK_SET) ;
+      read  (sysFds [gpioPin], &c, 1) ;
+      return (c == '0') ? 0 : 1 ;
+    }
+  }
   else
-    return LOW ;
+  {
+    if ((*(gpio + gpioToGPLEV [gpioPin]) & (1 << gpioPin)) != 0)
+      return HIGH ;
+    else
+      return LOW ;
+  }
 }
 
 /*
@@ -549,6 +659,11 @@ int digitalRead (int pin)
 void pullUpDnControl (int pin, int pud)
 {
   int gpioPin ;
+
+// We can't do this in GPIO_SYS mode
+
+  if (gpioPinMode == WPI_MODE_GPIO_SYS)
+    return ;
 
   if (gpioPinMode == WPI_MODE_PINS)
   {

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name	= 'wiringpi'
-  s.version	= '1.0.2'
+  s.version	= '1.1.0'
   s.license = 'GNU General Public License'
   s.date	= '2012-06-22'
   s.platform= Gem::Platform::RUBY

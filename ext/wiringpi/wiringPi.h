@@ -25,8 +25,9 @@
 
 #define	NUM_PINS	17
 
-#define	WPI_MODE_PINS	 0
-#define	WPI_MODE_GPIO	 1
+#define	WPI_MODE_PINS		 0
+#define	WPI_MODE_GPIO		 1
+#define	WPI_MODE_GPIO_SYS	 2
 
 #define	INPUT		 0
 #define	OUTPUT		 1
@@ -48,7 +49,11 @@ extern "C" {
 #endif
 
 extern int  wiringPiSetup     (void) ;
+extern int  wiringPiSetupSys  (void) ;
+extern int  wiringPiSetupGpio (void) ;
+
 extern void wiringPiGpioMode  (int mode) ;
+
 extern void pullUpDnControl   (int pin, int pud) ;
 extern void pinMode           (int pin, int mode) ;
 extern void digitalWrite      (int pin, int value) ;
