@@ -28,7 +28,7 @@ extern int   serialGetchar   (int fd) ;
 extern void  serialPrintf    (int fd, char *message, ...) ;
 
 %{
-#include "wiringPi.h"
-#include "wiringShift.h"
-#include "serial.h"
+#include "WiringPi/wiringPi/wiringPi.h"
+#include "WiringPi/wiringPi/wiringShift.h"
+#include "WiringPi/wiringPi/serial.h"
 %}

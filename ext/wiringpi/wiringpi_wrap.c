@@ -2022,9 +2022,9 @@ SWIG_AsCharPtrAndSize(VALUE obj, char** cptr, size_t* psize, int *alloc)
 
 
 
-#include "wiringPi.h"
-#include "wiringShift.h"
-#include "serial.h"
+#include "WiringPi/wiringPi/wiringPi.h"
+#include "WiringPi/wiringPi/wiringShift.h"
+#include "WiringPi/wiringPi/serial.h"
 
 SWIGINTERN VALUE
 _wrap_wiringPiSetup(int argc, VALUE *argv, VALUE self) {
