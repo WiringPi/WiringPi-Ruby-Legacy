@@ -1,3 +1,5 @@
+1.1.0
+    Added wrappings for Gordon's new /sys/class/gpio functionality.
 1.0.0
     Significant architectural changes and new features over alpha version.
     Updated to latest version of wiringPi library which includes shiftOut/shiftIn and serial functions.
