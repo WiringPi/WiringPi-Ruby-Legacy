@@ -30,5 +30,5 @@ extern void  serialPrintf    (int fd, char *message, ...) ;
 %{
 #include "WiringPi/wiringPi/wiringPi.h"
 #include "WiringPi/wiringPi/wiringShift.h"
-#include "WiringPi/wiringPi/serial.h"
+#include "WiringPi/wiringPi/wiringSerial.h"
 %}
