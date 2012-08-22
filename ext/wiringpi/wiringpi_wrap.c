@@ -1814,6 +1814,11 @@ static VALUE mWiringpi;
 #define SWIG_as_voidptrptr(a) ((void)SWIG_as_voidptr(*a),(void**)(a)) 
 
 
+#include "wiringPi.h"
+#include "wiringShift.h"
+#include "wiringSerial.h"
+
+
 #include <limits.h>
 #if !defined(SWIG_NO_LLONG_MAX)
 # if !defined(LLONG_MAX) && defined(__GNUC__) && defined (__LONG_LONG_MAX__)
@@ -2021,11 +2026,6 @@ SWIG_AsCharPtrAndSize(VALUE obj, char** cptr, size_t* psize, int *alloc)
 
 
 
-
-#include "WiringPi/wiringPi/wiringPi.h"
-#include "WiringPi/wiringPi/wiringShift.h"
-#include "WiringPi/wiringPi/wiringSerial.h"
-
 SWIGINTERN VALUE
 _wrap_wiringPiSetup(int argc, VALUE *argv, VALUE self) {
   int result;
@@ -2075,20 +2075,28 @@ fail:
 
 
 SWIGINTERN VALUE
-_wrap_wiringPiGpioMode(int argc, VALUE *argv, VALUE self) {
+_wrap_pinMode(int argc, VALUE *argv, VALUE self) {
   int arg1 ;
+  int arg2 ;
   int val1 ;
   int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
   
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  if ((argc < 2) || (argc > 2)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 2)",argc); SWIG_fail;
   }
   ecode1 = SWIG_AsVal_int(argv[0], &val1);
   if (!SWIG_IsOK(ecode1)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "int","wiringPiGpioMode", 1, argv[0] ));
+    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "int","pinMode", 1, argv[0] ));
   } 
   arg1 = (int)(val1);
-  wiringPiGpioMode(arg1);
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","pinMode", 2, argv[1] ));
+  } 
+  arg2 = (int)(val2);
+  pinMode(arg1,arg2);
   return Qnil;
 fail:
   return Qnil;
@@ -2118,35 +2126,6 @@ _wrap_pullUpDnControl(int argc, VALUE *argv, VALUE self) {
   } 
   arg2 = (int)(val2);
   pullUpDnControl(arg1,arg2);
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_pinMode(int argc, VALUE *argv, VALUE self) {
-  int arg1 ;
-  int arg2 ;
-  int val1 ;
-  int ecode1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  
-  if ((argc < 2) || (argc > 2)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 2)",argc); SWIG_fail;
-  }
-  ecode1 = SWIG_AsVal_int(argv[0], &val1);
-  if (!SWIG_IsOK(ecode1)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "int","pinMode", 1, argv[0] ));
-  } 
-  arg1 = (int)(val1);
-  ecode2 = SWIG_AsVal_int(argv[1], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","pinMode", 2, argv[1] ));
-  } 
-  arg2 = (int)(val2);
-  pinMode(arg1,arg2);
   return Qnil;
 fail:
   return Qnil;
@@ -2852,9 +2831,8 @@ SWIGEXPORT void Init_wiringpi(void) {
   rb_define_module_function(mWiringpi, "wiringPiSetup", _wrap_wiringPiSetup, -1);
   rb_define_module_function(mWiringpi, "wiringPiSetupSys", _wrap_wiringPiSetupSys, -1);
   rb_define_module_function(mWiringpi, "wiringPiSetupGpio", _wrap_wiringPiSetupGpio, -1);
-  rb_define_module_function(mWiringpi, "wiringPiGpioMode", _wrap_wiringPiGpioMode, -1);
-  rb_define_module_function(mWiringpi, "pullUpDnControl", _wrap_pullUpDnControl, -1);
   rb_define_module_function(mWiringpi, "pinMode", _wrap_pinMode, -1);
+  rb_define_module_function(mWiringpi, "pullUpDnControl", _wrap_pullUpDnControl, -1);
   rb_define_module_function(mWiringpi, "digitalWrite", _wrap_digitalWrite, -1);
   rb_define_module_function(mWiringpi, "pwmWrite", _wrap_pwmWrite, -1);
   rb_define_module_function(mWiringpi, "digitalRead", _wrap_digitalRead, -1);
