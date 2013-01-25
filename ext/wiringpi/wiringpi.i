@@ -8,6 +8,8 @@
 
 %apply unsigned char { uint8_t };
 
+extern int  piBoardRev        (void) ;
+
 extern int  wiringPiSetup     (void) ;
 extern int  wiringPiSetupSys  (void) ;
 extern int  wiringPiSetupGpio (void) ;
