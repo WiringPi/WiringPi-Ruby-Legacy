@@ -2497,6 +2497,33 @@ fail:
   return Qnil;
 }
 
+SWIGINTERN VALUE
+_wrap_serialParity(int argc, VALUE *argv, VALUE self) {
+  int arg1,arg2 ;
+  int val1,val2 ;
+  int ecode1 = 0, ecode2 = 0 ;
+  
+  if ((argc < 2) || (argc > 2)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  }
+  ecode1 = SWIG_AsVal_int(argv[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "int","serialiParity", 1, argv[0] ));
+  } 
+  arg1 = (int)(val1);
+
+  ecode2 = SWIG_AsVal_int(argv[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","serialParity", 1, argv[1] ));
+  } 
+  arg2 = (int)(val2);
+  serialParity(arg1,arg2);
+  return Qnil;
+fail:
+  return Qnil;
+}
+
+
 
 SWIGINTERN VALUE
 _wrap_serialGetchar(int argc, VALUE *argv, VALUE self) {
