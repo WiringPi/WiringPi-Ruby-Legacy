@@ -2508,7 +2508,7 @@ _wrap_serialParity(int argc, VALUE *argv, VALUE self) {
   }
   ecode1 = SWIG_AsVal_int(argv[0], &val1);
   if (!SWIG_IsOK(ecode1)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "int","serialiParity", 1, argv[0] ));
+    SWIG_exception_fail(SWIG_ArgError(ecode1), Ruby_Format_TypeError( "", "int","serialParity", 1, argv[0] ));
   } 
   arg1 = (int)(val1);
 
@@ -2874,6 +2874,7 @@ SWIGEXPORT void Init_wiringpi(void) {
   rb_define_module_function(mWiringpi, "serialPuts", _wrap_serialPuts, -1);
   rb_define_module_function(mWiringpi, "serialDataAvail", _wrap_serialDataAvail, -1);
   rb_define_module_function(mWiringpi, "serialGetchar", _wrap_serialGetchar, -1);
+  rb_define_module_function(mWiringpi, "serialParity", _wrap_serialParity, -1);
   rb_define_module_function(mWiringpi, "serialPrintf", _wrap_serialPrintf, -1);
 }
 
