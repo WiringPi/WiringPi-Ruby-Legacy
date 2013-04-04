@@ -165,6 +165,15 @@ module WiringPi
       Wiringpi.pinMode(pin, mode)
 
     end
+    
+    def pullUpDnControl(pin,mode)
+
+      raise ArgumentError, pinError(pin) unless checkPin(pin)
+      raise ArgumentError, "invalid mode" unless [PUD_OFF,PUD_DOWN,PUD_UP].include?(mode)
+
+      Wiringpi.pullUpDnControl(pin, mode)
+
+    end
 
 =begin
 shiftOutArray int dataPin, int clockPin, int latchPin, int[] bits
