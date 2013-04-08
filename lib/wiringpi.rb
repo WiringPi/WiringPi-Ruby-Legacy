@@ -68,6 +68,10 @@ module WiringPi
       Wiringpi.serialGetchar( @id )
 
     end
+    
+    def serialParity (int)
+      Wiringpi.serialParity(@id, int)
+    end
 
   end
 
