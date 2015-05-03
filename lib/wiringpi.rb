@@ -77,8 +77,12 @@ module WiringPi
 
   class GPIO
 
-    GPIO_PINS = [
+    GPIO_PINS_REV_1 = [
       0,1,4,7,8,9,10,11,14,15,17,18,21,22,23,24,25 # seemingly random indeed!
+      ]
+
+    GPIO_PINS_REV_2 = [
+      2,3,4,7,8,9,10,11,14,15,17,18,22,23,24,25,27 # replace 3 pins for Rev. 2 Pi's
       ]
 
     PINS = [
@@ -90,11 +94,13 @@ module WiringPi
 
     @mode = WPI_MODE_PINS
 
+    @gpio_pins = GPIO_PINS_REV_2
+
     @@init = false  # once wiringPiSetup has been called, we don't have to do it again
 
     def initialize( mode=WPI_MODE_PINS )
 
-	  @mode = mode
+	    @mode = mode
       self.wiringPiSetup unless @@init
 
     end
@@ -104,6 +110,10 @@ module WiringPi
       @mode = mode
       Wiringpi.wiringPiGpioMode( @mode )
 
+    end
+
+    def piBoardRev
+      Wiringpi.piBoardRev
     end
 
     def wiringPiSetup
@@ -116,6 +126,12 @@ module WiringPi
         elsif @mode == WPI_MODE_SYS
             Wiringpi.wiringPiSetupSys
         end
+
+        if self.piBoardRev == 1   # What PINs should we use for this board
+          @gpio_pins = GPIO_PINS_REV_1
+        else
+          @gpio_pins = GPIO_PINS_REV_2
+        end
       rescue Exception=>e
         raise e
       end
@@ -127,13 +143,13 @@ module WiringPi
 
     def checkPin(pin)
 
-      ( @mode = WPI_MODE_PINS and PINS.include?(pin) ) or ( @mode = WPI_MODE_GPIO and GPIO_PINS.include?(pin) )
+      ( @mode = WPI_MODE_PINS and PINS.include?(pin) ) or ( @mode = WPI_MODE_GPIO and @gpio_pins.include?(pin) )
 
     end
 
     def pinError(pin)
       "invalid #{pin}, available gpio pins: #{PINS}" if @mode == WPI_MODE_PINS
-      "invalid #{pin}, available gpio pins: #{GPIO_PINS}" if @mode == WPI_MODE_GPIO
+      "invalid #{pin}, available gpio pins: #{@gpio_pins}" if @mode == WPI_MODE_GPIO
     end
 
     def read(pin)
@@ -228,7 +244,7 @@ Reads values of all pins and returns them as a hash
 
       if @mode == WPI_MODE_GPIO
 
-        GPIO_PINS.each do |pin|
+        @gpio_pins.each do |pin|
         
           pinValues[pin] = self.read(pin)
         
